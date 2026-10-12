@@ -1,0 +1,6 @@
+.DS_Store
+*.uf2
+*.uf2.zip
+*.uf2.gz
+__pycache__/
+cad/RcCarChassis/stl/

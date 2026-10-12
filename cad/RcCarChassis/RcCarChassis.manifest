@@ -1,0 +1,10 @@
+{
+	"autodeskProduct": "Fusion",
+	"type": "script",
+	"author": "",
+	"description": {
+		"": "PicoRuby BLE RC car: chassis, body and bumper (Pico 2 W + TT motors)"
+	},
+	"supportedOS": "windows|mac",
+	"editEnabled": true
+}

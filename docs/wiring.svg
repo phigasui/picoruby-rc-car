@@ -1,0 +1,100 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" font-family="Hiragino Sans, 'Noto Sans JP', sans-serif" font-size="15">
+  <rect width="960" height="600" fill="#fffdf7"/>
+  <text x="24" y="36" font-size="22" font-weight="bold" fill="#333">ラジコンカー 配線図 (Pico 2 W + DRV8833)</text>
+
+  <!-- 電池ボックス -->
+  <rect x="30" y="80" width="190" height="130" rx="10" fill="#e8f1ff" stroke="#3b6fb6" stroke-width="2"/>
+  <text x="125" y="108" text-anchor="middle" font-weight="bold">電池ボックス</text>
+  <text x="125" y="130" text-anchor="middle">単3 × 3本 (4.5V)</text>
+  <text x="125" y="150" text-anchor="middle">スイッチ付き</text>
+  <circle cx="200" cy="180" r="6" fill="#d33"/><text x="150" y="185" fill="#d33">＋ 赤</text>
+  <circle cx="200" cy="200" r="6" fill="#222"/><text x="150" y="205">− 黒</text>
+
+  <!-- ブレッドボード -->
+  <rect x="300" y="70" width="280" height="300" rx="10" fill="#f6f6f6" stroke="#888" stroke-width="2"/>
+  <text x="440" y="96" text-anchor="middle" font-weight="bold">ブレッドボード (83×53)</text>
+
+  <!-- ダイオード -->
+  <rect x="330" y="140" width="80" height="26" rx="4" fill="#333"/>
+  <rect x="396" y="140" width="10" height="26" fill="#ccc"/>
+  <text x="370" y="132" text-anchor="middle" font-size="13">1N5819</text>
+  <text x="370" y="186" text-anchor="middle" font-size="12" fill="#666">白い帯が Pico 側</text>
+
+  <!-- DRV8833 -->
+  <rect x="440" y="200" width="120" height="150" rx="6" fill="#c0392b"/>
+  <text x="500" y="222" text-anchor="middle" fill="#fff" font-weight="bold">DRV8833</text>
+  <g fill="#fff" font-size="13">
+    <text x="448" y="246">VM</text><text x="448" y="266">GND</text><text x="448" y="286">AIN1</text>
+    <text x="448" y="306">AIN2</text><text x="448" y="326">BIN1</text><text x="448" y="344">BIN2</text>
+    <text x="552" y="246" text-anchor="end">EEP</text><text x="552" y="276" text-anchor="end">AO1</text>
+    <text x="552" y="296" text-anchor="end">AO2</text><text x="552" y="320" text-anchor="end">BO1</text>
+    <text x="552" y="340" text-anchor="end">BO2</text>
+  </g>
+
+  <!-- Pico -->
+  <rect x="660" y="80" width="150" height="330" rx="8" fill="#2e8b57"/>
+  <text x="735" y="108" text-anchor="middle" fill="#fff" font-weight="bold">Pico 2 WH</text>
+  <g fill="#fff" font-size="13">
+    <text x="668" y="150">39 VSYS</text>
+    <text x="668" y="180">38 GND</text>
+    <text x="668" y="210">36 3V3(OUT)</text>
+    <text x="668" y="290">21 GP16</text>
+    <text x="668" y="315">22 GP17</text>
+    <text x="668" y="340">24 GP18</text>
+    <text x="668" y="365">25 GP19</text>
+  </g>
+
+  <!-- モーター -->
+  <circle cx="440" cy="480" r="42" fill="#f3d36b" stroke="#a08020" stroke-width="2"/>
+  <text x="440" y="476" text-anchor="middle" font-weight="bold">ひだり</text>
+  <text x="440" y="496" text-anchor="middle">モーター</text>
+  <circle cx="620" cy="480" r="42" fill="#f3d36b" stroke="#a08020" stroke-width="2"/>
+  <text x="620" y="476" text-anchor="middle" font-weight="bold">みぎ</text>
+  <text x="620" y="496" text-anchor="middle">モーター</text>
+
+  <g fill="none" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <!-- 電池 + → ダイオード & VM -->
+    <path d="M206 180 H270 V153 H330" stroke="#d33"/>
+    <path d="M270 180 V242 H448" stroke="#d33"/>
+    <!-- ダイオード → VSYS -->
+    <path d="M410 153 H620 V146 H668" stroke="#e67e22"/>
+    <!-- GND -->
+    <path d="M206 200 H256 V262 H448" stroke="#222"/>
+    <path d="M256 262 V410 H640 V176 H668" stroke="#222"/>
+    <!-- 3V3 → EEP -->
+    <path d="M668 206 H600 V242 H552" stroke="#8e44ad"/>
+  </g>
+  <!-- 信号線: ピンの横に色マーク -->
+  <g>
+    <rect x="652" y="280" width="10" height="10" fill="#1e88e5"/><rect x="430" y="276" width="10" height="10" fill="#1e88e5"/>
+    <rect x="652" y="305" width="10" height="10" fill="#26a69a"/><rect x="430" y="296" width="10" height="10" fill="#26a69a"/>
+    <rect x="652" y="330" width="10" height="10" fill="#fb8c00"/><rect x="430" y="316" width="10" height="10" fill="#fb8c00"/>
+    <rect x="652" y="355" width="10" height="10" fill="#6d4c41"/><rect x="430" y="334" width="10" height="10" fill="#6d4c41"/>
+  </g>
+  <!-- 信号線はラベルで示す (線が混み合うため) -->
+  <g font-size="14">
+    <rect x="26" y="250" width="216" height="150" rx="8" fill="#fff" stroke="#bbb"/>
+    <text x="38" y="274" font-weight="bold">信号線 (オス-オス ジャンパー)</text>
+    <text x="38" y="298" fill="#1e88e5">■ GP16 (21番) → AIN1</text>
+    <text x="38" y="320" fill="#26a69a">■ GP17 (22番) → AIN2</text>
+    <text x="38" y="342" fill="#fb8c00">■ GP18 (24番) → BIN1</text>
+    <text x="38" y="364" fill="#6d4c41">■ GP19 (25番) → BIN2</text>
+    <text x="38" y="388" fill="#8e44ad">■ 3V3(OUT) (36番) → EEP</text>
+  </g>
+
+  <!-- モーター線 -->
+  <g fill="none" stroke-width="3">
+    <path d="M552 272 H580 V420 H420 V440" stroke="#d33"/>
+    <path d="M552 292 H590 V428 H460 V440" stroke="#222"/>
+    <path d="M552 316 H600 V436 H600 V440" stroke="#d33"/>
+    <path d="M552 336 H610 V430 H640 V440" stroke="#222"/>
+  </g>
+
+  <g font-size="13" fill="#555">
+    <text x="30" y="440">・GND はぜんぶ つなぐ (電池 − / DRV8833 GND / Pico GND)</text>
+    <text x="30" y="460">・電池は 3 本まで。4 本だと VSYS の 5.5V をこえる</text>
+    <text x="30" y="480">・USB をつないだまま 電池スイッチを入れても</text>
+    <text x="30" y="498">  ダイオードがあるので だいじょうぶ</text>
+    <text x="30" y="520">・逆に回るモーターは app.rb の INVERT_L / INVERT_R で直す</text>
+  </g>
+</svg>

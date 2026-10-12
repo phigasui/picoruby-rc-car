@@ -1,0 +1,106 @@
+# PicoRuby ラジコンカー
+
+Raspberry Pi Pico 2 W と PicoRuby、3D プリンタで作る、親子向けの BLE ラジコンカーです。
+Android や PC の Chrome で開いた Web コントローラーから操作します。
+
+```
+rc-car/
+├── firmware/app.rb            PicoRuby の制御コード (/home/app.rb に置く)
+├── controller/index.html      Web コントローラー (Chrome で開く)
+├── cad/RcCarChassis/          Fusion 用スクリプト (底板・ボディ・バンパー)
+└── docs/                      部品表 (BOM.md) と 配線 (wiring.md / wiring.svg)
+```
+
+## 作る流れ
+
+| # | やること | 担当の目安 |
+|---|---|---|
+| 1 | 部品をそろえる（[docs/BOM.md](docs/BOM.md)） | 大人 |
+| 2 | Fusion でスクリプトを実行し、STL を印刷する | 大人（名前を決めるのは子供） |
+| 3 | モーター・キャスター・電池ボックスを底板に付ける | 一緒に |
+| 4 | 配線する（[docs/wiring.md](docs/wiring.md)） | 大人が読み上げて、子供が差す |
+| 5 | ファームを書き込み、app.rb を転送する | 大人 |
+| 6 | タイヤを浮かせて動作確認 → ボディをネジ止め | 子供 |
+| 7 | 走らせる。`app.rb` の数字を変えて遊ぶ | 子供 |
+
+## 1. 3D モデル（Fusion）
+
+1. Fusion を開き、**ユーティリティ > アドイン > スクリプトとアドイン** を選ぶ
+2. 「＋」から `cad/RcCarChassis` フォルダを追加して、`RcCarChassis` を実行する
+3. 新しいデザインに `Chassis` / `Body` / `Bumper` が作られる。STL は `cad/RcCarChassis/stl/` に書き出される
+
+寸法を変えたいときは、`RcCarChassis.py` の冒頭にある `P` を書き換えてもう一度実行します（毎回、新しいデザインとして作り直します）。
+- `name_text`: ボディの上に彫る名前（英字。日本語を使うときは `name_font` を日本語フォントにする）
+- `tt_*`: TT モーターの寸法。**製品によって穴の位置が違うので、実物をはかって直す**
+- `caster_h`: 使うボールキャスターの高さ。底板の下に付く台座の高さを自動で計算する
+
+**印刷のめやす**（PLA、ノズル 0.4mm）
+- Chassis: そのまま。インフィル 20%
+- Body: **スライサーで裏返し、上面を下にして**印刷する（名前の彫り込みがきれいに出る）
+- Bumper: そのまま。すき間の部分にはサポートなしでブリッジできる
+- 底板の大きさは 192 × 132mm（バンパーを付けると長さ 202mm）。**ベッドが 200mm 角以上のプリンタ**が必要
+
+**組み立て**
+- TT モーター: M3×30 のネジを、壁 → モーターの穴の順に通し、外側をナットで留める
+- キャスター: 底板の後ろ、下側に M3 で留める
+- 電池ボックス・ブレッドボード: 枠の中に両面テープで貼る
+- Pico: ブレッドボードに直接さす（USB を前に向ける）
+- バンパー: 底板の前の端に差し込み、M3 で留める
+- ボディ: 上からかぶせて、M3 タッピングネジ 4 本で柱に留める
+
+## 2. ファームウェア（PicoRuby）
+
+1. https://github.com/picoruby/picoruby/releases から `R2P2-PICORUBY-<version>-PICO2_W-*.uf2.zip` をダウンロードして展開する（**4.0.4 以上**を使う。それより前は BLE でメモリリークがある）
+2. Pico の BOOTSEL ボタンを押しながら USB をつなぐ
+3. 出てきたドライブに `.uf2` をドラッグする
+4. Chrome で https://picoruby.org/terminal.html を開いて Pico に接続し、`firmware/app.rb` を `/home/app.rb` としてアップロードする
+   - 別の方法: R2P2 シェルで `vim /home/app.rb` を開き、中身を貼り付ける
+5. Pico をリセットすると `app.rb` が自動で動き出す。オンボード LED が点滅していれば、つながるのを待っている状態
+
+> PicoRuby 4.x の Pico は、USB ドライブとしては見えません。ファイルは Web Terminal か PicoModem（`picoruby tools/picomodem.rb put app.rb /home/app.rb`）で転送します。
+
+## 3. 動作確認（タイヤを浮かせてから）
+
+1. スマホに **nRF Connect** を入れて `KURUMA-1` に接続する
+2. Nordic UART の RX に、テキストで `D 50 50` を送る。両方のタイヤが前向きに回れば OK
+   - 逆に回るときは、モーターの線を入れ替えるか、`INVERT_L` / `INVERT_R` を `true` にする
+3. 何も送らずにいると、0.5 秒で止まることを確かめる（フェイルセーフ）
+
+## 4. 走らせる
+
+- **https://phigasui.github.io/picoruby-rc-car/controller/** を **Android か PC の Chrome** で開き、「つなぐ」を押して `KURUMA-1` を選ぶ
+  - iPhone の Safari は Web Bluetooth に対応していないので使えない
+  - スマホから開くときは、GitHub Pages など **https** のページに置く（Web Bluetooth は https か localhost でしか動かない）
+- 矢印を押している間だけ走る。離すと止まる
+- 速さは 🐢 / 🐇 / 🚀 で切り替える
+- 💃 を押すと、`DANCE` に書いた動きをする
+- PC ではキーボードの矢印キーで動かせる（2 つ同時に押すとななめ）。スペースキーでおどる
+
+## 5. 子供がいじるところ（`app.rb` の冒頭）
+
+```ruby
+NAME = "KURUMA-1"      # スマホに出てくる名前
+MAX_SPEED = 70         # いちばん速いスピード
+DANCE = [              # おどりの動き [左, 右, 何秒]
+  [ 100,  100, 0.5],
+  ...
+]
+```
+
+数字を書き換えて保存し、Pico をリセットすると反映されます。
+「`DANCE` に 1 行足すと、どう変わる？」から始めるのがおすすめです。
+
+## 通信のやくそく（BLE Nordic UART、1 行ずつ）
+
+| コマンド | 意味 |
+|---|---|
+| `D <左> <右>` | 左右の速さを -100〜100 で指定して走る（`MAX_SPEED` を掛けた値になる） |
+| `S` | 止まる |
+| `X` | おどる |
+
+最後のコマンドから 500ms 何も来なければ止まります（おどっている間は除く）。BLE が切れたときも止まります。
+
+## まだ確かめていないこと（実機で確認してください）
+- PicoRuby 4.x で `require 'pwm'` が必要かどうか（`app.rb` では、失敗しても止まらないように書いてある）
+- TT モーターの取付穴の位置（製品によって違う）
+- `BLE::UART` に Android の Chrome からつなげるか。PicoRuby の BLE はまだ実験的な機能で、Mac との組み合わせでしか試されていない
