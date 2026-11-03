@@ -4,3 +4,5 @@
 *.uf2.gz
 __pycache__/
 cad/RcCarChassis/stl/
+.vscode/
+cad/RcTire/stl/

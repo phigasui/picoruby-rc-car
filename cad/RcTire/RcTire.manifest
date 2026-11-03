@@ -1,0 +1,10 @@
+{
+	"autodeskProduct": "Fusion",
+	"type": "script",
+	"author": "",
+	"description": {
+		"": "PicoRuby BLE RC car: paddle tire for the Tamiya 3mm hex shaft (print in TPU)"
+	},
+	"supportedOS": "windows|mac",
+	"editEnabled": true
+}

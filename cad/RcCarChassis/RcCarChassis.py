@@ -5,8 +5,8 @@ Fusion の「ユーティリティ > アドイン > スクリプトとアドイ�
 
 - Chassis: 底板 (TT モーターの壁, Pico 2 W のスタンドオフ, 電池・ブレッドボードの枠,
   ボディ用の柱, キャスター台座)
-- Body:    上にかぶせるカバー (名前の彫り込み, ライトの穴, 配線の切り欠き)
-- Bumper:  前のバンパー (底板の前端に差し込んで M3 で留める)
+- Body:    上にかぶせる丸みのあるカバー (ライトの穴, ホイールアーチ, 名前の彫り込みは任意)
+- Bumper:  前のバンパー (底板の前端に差し込んで M2 で留める)
 
 最後に同じフォルダの stl/ に STL を書き出す。
 
@@ -22,33 +22,46 @@ import adsk.fusion
 
 P = {
     # 底板
-    "plate_l": 192.0,
-    "plate_w": 132.0,
+    "plate_l": 176.0,         # Bambu Lab A1 mini (180mm) に収まる長さ
+    "plate_w": 108.0,         # ブレッドボードとモーターの壁のすき間が約 3.75mm になる幅
     "plate_t": 3.0,
-    "plate_chamfer": 10.0,
+    "plate_corner_r": 15.0,  # 底板の四隅の丸み (ボディと同じ)
+    "plate_edge_r": 1.0,     # 底板の上下のふちの丸み
     # タイヤ (TT モーター用 65mm)
     "wheel_d": 65.0,
-    # TT ギアモーター (製品で少しちがうので実物をはかって直す)
-    "tt_w": 22.5,        # Y 方向 (シャフトと同じ向き) の厚み
-    "tt_shaft_z": 9.4,   # モーターの底からシャフト中心までの高さ
-    "tt_front": 11.0,    # シャフト中心から前端まで
-    "tt_rear": 59.0,     # シャフト中心から後端 (モーター缶の端) まで
-    "tt_hole1": 20.0,    # シャフト中心から 1 つめの取付穴まで (後ろ向き)
-    "tt_hole2": 37.5,    # シャフト中心から 2 つめの取付穴まで
-    "tt_hole_z": 9.4,    # モーターの底から取付穴までの高さ
+    # TT ギアモーター (秋月 MG-TTY1048D の寸法図より)
+    #   https://akizukidenshi.com/goodsaffix/TTY1048D_1120D.pdf
+    #   取付穴 2 つは上下に並び、シャフトと同じ向きに貫通している
+    "tt_w": 18.75,       # Y 方向 (シャフトと同じ向き) の厚み
+    "tt_h": 22.4,        # 高さ
+    "tt_shaft_z": 11.2,  # モーターの底からシャフト中心までの高さ
+    "tt_front": 11.3,    # シャフト中心から前端まで (ツメを除く)
+    "tt_rear": 53.5,     # シャフト中心から後端 (モーター缶の端) まで
+    "tt_hole_x": 20.0,   # シャフト中心から取付穴まで (後ろ向き)
+    "tt_hole_zc": 11.2,      # モーターの底から 2 つの取付穴の中心まで
+    "tt_hole_spacing": 17.54,  # 上下の取付穴の間隔 (中心から中心)
     "shaft_x": 40.0,     # 車体中心からシャフトまで (前向き)
     "mount_wall_t": 3.0,
-    "mount_wall_h": 20.0,
+    "mount_wall_h": 24.0,
     # ボディ
     "body_h": 45.0,
     "body_wall": 2.0,
     "body_top": 2.0,
     "body_clear": 1.0,   # モーター壁とのすき間
     "body_end_gap": 12.0,  # 底板の前後端からボディまで (バンパー・キャスター用)
+    # True: ボディを車体の幅いっぱいにしてモーターも覆う (タイヤのところはホイールアーチで切り欠く)
+    # False: モーターの間だけを覆う細いボディ
+    "body_cover_motors": True,
+    "arch_clear": 3.0,     # タイヤとホイールアーチのすき間
+    "skirt_gap": 0.5,      # 底板の横の端とボディの横の壁のすき間
+    "body_corner_r": 15.0, # ボディの四隅 (たての辺) の丸み
+    "body_top_r": 8.0,     # ボディの上面のふちの丸み
     # ネジ
-    "m3_clear": 3.4,
-    "m3_pilot": 2.6,
-    "m2_pilot": 1.8,
+    # ネジ: モーターとキャスターは M3、ボディとバンパーは M2
+    "m3_clear": 3.4,     # M3 の通し穴 (モーター, キャスター)
+    "screw_clear": 2.4,  # M2 の通し穴 (バンパー, ボディの上面)
+    "screw_pilot": 1.7,  # タッピングネジの下穴 (ボディの柱)
+    "m2_pilot": 1.8,     # Pico のスタンドオフ
     "post_d": 8.0,
     # Pico 2 W (穴 47 x 11.4, M2)。ブレッドボードに直接さすなら False にしてスタンドオフを作らない
     "pico_standoffs": False,
@@ -59,21 +72,24 @@ P = {
     "standoff_d": 5.0,
     "standoff_h": 4.0,
     # ブレッドボード (83 x 53。Pico 2 WH と DRV8833 をここにさす)
-    "bb_x": 36.5,
+    "bb_x": 23.0,
     "bb_y": 0.0,
     "bb_l": 83.0,
     "bb_w": 53.0,
     # 単3 x 3 電池ボックス (秋月 SBH-331AS: 68.5 x 48 x 18.7)
-    "batt_x": -44.5,
-    "batt_l": 69.0,
-    "batt_w": 48.0,
+    # 横向き (長いほうを Y 方向) にして、モーターの後ろに置く
+    "batt_x": -47.5,
+    "batt_l": 48.0,   # X 方向
+    "batt_w": 69.0,   # Y 方向
+    # 底からスイッチを操作する穴。電池ボックスの左後ろの角から (前後 X, 左右 Y)
+    "batt_switch_hole": (20.0, 10.0),
     # 枠 (ずれ止め)
     "lip_t": 1.5,
     "lip_h": 3.0,
     "lip_gap": 0.5,
     # ボールキャスター
-    "caster_x": -86.0,
-    "caster_hole_spacing": 25.0,  # Y 方向
+    "caster_x": -81.0,   # ナットがボディの外に出る位置
+    "caster_hole_spacing": 20.0,  # Y 方向 (中心から中心)
     "caster_h": 25.0,             # 地面から取付面まで (タミヤ 70144 の低いほうの組み方)
     # バンパー
     "bumper_depth": 10.0,
@@ -81,7 +97,7 @@ P = {
     "bumper_h": 16.0,
     "bumper_hole_y": 30.0,
     # かざり
-    "name_text": "KURUMA",
+    "name_text": "",       # ボディの上に彫る文字。空なら彫らない
     "name_font": "Arial Rounded MT Bold",
     "name_h": 14.0,
     "name_depth": 1.0,
@@ -165,6 +181,70 @@ def hole(comp, plane, center, d, body):
     ext.add(inp)
 
 
+def edges_where(body, pred):
+    """両端の頂点が pred(start, end) を満たす辺を集める."""
+    coll = adsk.core.ObjectCollection.create()
+    for e in body.edges:
+        if pred(e.startVertex.geometry, e.endVertex.geometry):
+            coll.add(e)
+    return coll
+
+
+def fillet(comp, edges, r):
+    if edges.count == 0 or r <= 0:
+        return
+    fillets = comp.features.filletFeatures
+    inp = fillets.createInput()
+    try:
+        inp.edgeSetInputs.addConstantRadiusEdgeSet(edges, vi(r), True)
+    except AttributeError:
+        # 古い API
+        inp.addConstantRadiusEdgeSet(edges, vi(r), True)
+    fillets.add(inp)
+
+
+def shell_open_bottom(comp, body, z, thickness):
+    """高さ z の平らな下の面を開けて、厚さ thickness でくり抜く."""
+    faces = adsk.core.ObjectCollection.create()
+    for f in body.faces:
+        if (f.geometry.surfaceType == adsk.core.SurfaceTypes.PlaneSurfaceType
+                and abs(f.pointOnFace.z - mm(z)) < 1e-4):
+            faces.add(f)
+    shells = comp.features.shellFeatures
+    inp = shells.createInput(faces, False)
+    inp.insideThickness = vi(thickness)
+    shells.add(inp)
+
+
+def plane_at_y(comp, y):
+    """Y = y の位置に XZ 平面と平行な作業平面を作る.
+
+    XZ 平面の法線の向きに頼らないよう、できた平面の位置を見て符号を合わせる。
+    """
+    planes = comp.constructionPlanes
+    for sign in (1, -1):
+        pin = planes.createInput()
+        pin.setByOffset(comp.xZConstructionPlane, vi(sign * y))
+        plane = planes.add(pin)
+        if abs(plane.geometry.origin.y - mm(y)) < 1e-6 or abs(y) < 1e-9:
+            return plane
+        plane.deleteMe()
+    raise RuntimeError("plane_at_y: Y=%s mm の平面が作れませんでした" % y)
+
+
+def cut_cylinder_y(comp, x, z, r, ya, yb, body):
+    """Y 方向を軸にした円柱 (Y = ya..yb) で body を切り取る."""
+    plane = plane_at_y(comp, (ya + yb) / 2)
+    sk = comp.sketches.add(plane)
+    c = sk.modelToSketchSpace(p3(x, (ya + yb) / 2, z))
+    sk.sketchCurves.sketchCircles.addByCenterRadius(c, mm(r))
+    ext = comp.features.extrudeFeatures
+    inp = ext.createInput(sk.profiles.item(0), adsk.fusion.FeatureOperations.CutFeatureOperation)
+    inp.setSymmetricExtent(vi(abs(yb - ya)), True)
+    inp.participantBodies = [body]
+    ext.add(inp)
+
+
 def hole_z(comp, x, y, d, body):
     hole(comp, comp.xYConstructionPlane, (x, y, 0), d, body)
 
@@ -200,10 +280,21 @@ def derived():
     d["half_w"] = P["plate_w"] / 2
     # モーター壁の内側の面 (車体の中心側)
     d["wall_in_y"] = d["half_w"] - P["tt_w"] - P["mount_wall_t"]
-    d["body_w"] = 2 * (d["wall_in_y"] - P["body_clear"])
+    # モーターの間の通路の幅。柱はこの中に立てる
+    d["channel_w"] = 2 * (d["wall_in_y"] - P["body_clear"])
+    if P["body_cover_motors"]:
+        d["body_w"] = 2 * (d["half_w"] + P["skirt_gap"] + P["body_wall"])
+    else:
+        d["body_w"] = d["channel_w"]
     d["body_l"] = P["plate_l"] - 2 * P["body_end_gap"]
-    d["post_x"] = d["body_l"] / 2 - P["body_wall"] - P["post_d"] / 2 - 0.5
-    d["post_y"] = d["body_w"] / 2 - P["body_wall"] - P["post_d"] / 2 - 0.5
+    # 柱は、上面のふちの丸みにかからない位置に立てる
+    d["post_x"] = d["body_l"] / 2 - P["body_wall"] - P["body_top_r"] - P["post_d"] / 2 - 1
+    if P["body_cover_motors"]:
+        # 広いボディのときは四隅寄りに立てる (モーターより前と後ろ)
+        d["post_y"] = d["body_w"] / 2 - P["body_wall"] - P["body_top_r"] - P["post_d"] / 2 - 1
+    else:
+        d["post_y"] = d["channel_w"] / 2 - P["body_wall"] - P["post_d"] / 2 - 0.5
+    d["axle_z"] = P["plate_t"] + P["tt_shaft_z"]  # 底板の下面から車軸まで
     d["post_h"] = P["body_h"] - P["body_top"]
     # 地面から底板の下面まで
     d["ground"] = P["wheel_d"] / 2 - P["plate_t"] - P["tt_shaft_z"]
@@ -215,21 +306,32 @@ def derived():
 
 def build_chassis(comp, d):
     t = P["plate_t"]
-    hl, hw, c = d["half_l"], d["half_w"], P["plate_chamfer"]
-    plate = poly(comp, [
-        (hl - c, -hw), (hl, -hw + c), (hl, hw - c), (hl - c, hw),
-        (-hl + c, hw), (-hl, hw - c), (-hl, -hw + c), (-hl + c, -hw),
-    ], 0, t)
+    hl, hw = d["half_l"], d["half_w"]
+    plate = box(comp, -hl, -hw, hl, hw, 0, t)
     plate.name = "Chassis"
+    # ほかの形を足す前に、四隅と上下のふちを丸める
+    eps = 1e-4
+    fillet(comp, edges_where(plate, lambda a, b: abs(a.x - b.x) < eps and abs(a.y - b.y) < eps),
+           P["plate_corner_r"])
+    fillet(comp, edges_where(plate, lambda a, b: abs(a.z - b.z) < eps), P["plate_edge_r"])
 
-    # TT モーターを留める壁 (M3 ボルトを壁 → モーターに通して外側でナット)
+    # TT モーターを留める壁 (M3×25 をタイヤ側から モーター → 壁 に通して内側でナット)
     sx = P["shaft_x"]
     for s in (1, -1):
         y_in = s * d["wall_in_y"]
         y_out = s * (d["wall_in_y"] + P["mount_wall_t"])
-        box(comp, sx - P["tt_hole2"] - 8, y_in, sx + 5, y_out, t, P["mount_wall_h"], plate)
-    for hx in (P["tt_hole1"], P["tt_hole2"]):
-        hole_y(comp, sx - hx, t + P["tt_hole_z"], P["m3_clear"], plate)
+        box(comp, sx - P["tt_hole_x"] - 8, y_in, sx + 5, y_out, t, P["mount_wall_h"], plate)
+    for hz in (P["tt_hole_zc"] - P["tt_hole_spacing"] / 2, P["tt_hole_zc"] + P["tt_hole_spacing"] / 2):
+        hole_y(comp, sx - P["tt_hole_x"], t + hz, P["m3_clear"], plate)
+    # 下の穴は底板に近いので、壁の内側のナットが底板に当たらないよう浅い逃げを彫る
+    low = P["tt_hole_zc"] - P["tt_hole_spacing"] / 2
+    nut_r = 3.3  # M3 ナットの角まで
+    if low < nut_r + 0.3:
+        depth = min(t - 1.5, nut_r + 0.3 - low)
+        hx = sx - P["tt_hole_x"]
+        for s_ in (1, -1):
+            ya, yb = s_ * (d["wall_in_y"] - 4.5), s_ * d["wall_in_y"]
+            box(comp, hx - 4, min(ya, yb), hx + 4, max(ya, yb), t - depth, depth, plate, cut=True)
 
     # Pico 2 W のスタンドオフ (M2 タッピング)
     px, py = P["pico_x"], P["pico_y"]
@@ -244,12 +346,19 @@ def build_chassis(comp, d):
     frame(comp, P["bb_x"], P["bb_y"], P["bb_l"], P["bb_w"], plate)
     frame(comp, P["batt_x"], 0, P["batt_l"], P["batt_w"], plate)
 
-    # ボディを留める柱 (M3 タッピング)
+    # 電池ボックスのスイッチを底から操作する穴 (左後ろの角から)
+    if P["batt_switch_hole"]:
+        hx, hy = P["batt_switch_hole"]
+        bx0 = P["batt_x"] - P["batt_l"] / 2   # 後ろの端
+        by1 = P["batt_w"] / 2                 # 左の端 (+Y)
+        box(comp, bx0, by1 - hy, bx0 + hx, by1, 0, t, plate, cut=True)
+
+    # ボディを留める柱 (M2 タッピング)
     posts = [(sx_ * d["post_x"], sy_ * d["post_y"]) for sx_ in (1, -1) for sy_ in (1, -1)]
     for x, y in posts:
         cyl(comp, x, y, P["post_d"], t, d["post_h"], plate)
     for x, y in posts:
-        cyl(comp, x, y, P["m3_pilot"], t, d["post_h"], plate, cut=True)
+        cyl(comp, x, y, P["screw_pilot"], t, d["post_h"], plate, cut=True)
 
     # ボールキャスターの台座 (底板の下)
     cx, cs = P["caster_x"], P["caster_hole_spacing"]
@@ -260,7 +369,7 @@ def build_chassis(comp, d):
 
     # バンパーを留める穴
     for y in (P["bumper_hole_y"], -P["bumper_hole_y"]):
-        hole_z(comp, hl - P["bumper_tab"] / 2, y, P["m3_clear"], plate)
+        hole_z(comp, hl - P["bumper_tab"] / 2, y, P["screw_clear"], plate)
 
     return plate, posts
 
@@ -273,25 +382,43 @@ def build_body(comp, d, posts):
 
     body = box(comp, x0, y0, x1, y1, t, bh)
     body.name = "Body"
-    box(comp, x0 + wall, y0 + wall, x1 - wall, y1 - wall, t, bh - P["body_top"], body, cut=True)
+    # 角を丸めてから、下の面を開けて中をくり抜く (丸い角でも壁の厚さがそろう)
+    eps = 1e-4
+    fillet(comp, edges_where(body, lambda a, b: abs(a.x - b.x) < eps and abs(a.y - b.y) < eps),
+           P["body_corner_r"])
+    fillet(comp, edges_where(body, lambda a, b: abs(a.z - mm(top)) < eps and abs(b.z - mm(top)) < eps),
+           P["body_top_r"])
+    shell_open_bottom(comp, body, t, wall)
+
+    if P["body_cover_motors"]:
+        # 横の壁は底板の外側にあるので、底板の横の端も隠れるように下まで伸ばす
+        cr = P["body_corner_r"]
+        for ya, yb in ((y0, y0 + wall), (y1 - wall, y1)):
+            box(comp, x0 + cr, ya, x1 - cr, yb, 0, t, body)
+        # ホイールアーチ: モーターの外側の面より外を、タイヤに合わせて丸く切り取る
+        r = P["wheel_d"] / 2 + P["arch_clear"]
+        y_from = d["half_w"] - 1
+        for s in (1, -1):
+            cut_cylinder_y(comp, P["shaft_x"], d["axle_z"], r,
+                           s * y_from, s * (y1 + 1), body)
 
     # 上から柱に留めるネジ穴
     for x, y in posts:
-        hole_z(comp, x, y, P["m3_clear"], body)
+        hole_z(comp, x, y, P["screw_clear"], body)
 
-    # モーターの配線を通す切り欠き (左右)
-    wx = P["shaft_x"] - P["tt_rear"] + 8
-    for ya, yb in ((y0 - 1, y0 + wall + 1), (y1 - wall - 1, y1 + 1)):
-        box(comp, wx - 6, ya, wx + 6, yb, t, 8, body, cut=True)
-
-    # 電池ボックスのスイッチに指がとどく窓 (後ろ)
-    box(comp, x0 - 1, -15, x0 + wall + 1, 15, t + 2, 18, body, cut=True)
+    # モーターの配線を通す切り欠き (モーターがボディの外にあるときだけ)
+    if not P["body_cover_motors"]:
+        wx = P["shaft_x"] - P["tt_rear"] + 8
+        for ya, yb in ((y0 - 1, y0 + wall + 1), (y1 - wall - 1, y1 + 1)):
+            box(comp, wx - 6, ya, wx + 6, yb, t, 8, body, cut=True)
 
     # ヘッドライト (前)
     for y in (bw / 4, -bw / 4):
         hole_x(comp, y, t + bh * 0.6, P["headlight_d"], body)
 
     # 名前の彫り込み (上面)。上面を下にして印刷するので浮き彫りではなく彫り込みにする
+    if not P["name_text"]:
+        return body
     try:
         planes = comp.constructionPlanes
         pin = planes.createInput()
@@ -332,7 +459,7 @@ def build_bumper(comp, d):
     # 底板が入るすき間
     box(comp, hl - tab - 1, -w / 2 - 1, hl + 0.3, w / 2 + 1, -0.2, t + 0.4, bumper, cut=True)
     for y in (P["bumper_hole_y"], -P["bumper_hole_y"]):
-        hole_z(comp, hl - tab / 2, y, P["m3_clear"], bumper)
+        hole_z(comp, hl - tab / 2, y, P["screw_clear"], bumper)
     return bumper
 
 

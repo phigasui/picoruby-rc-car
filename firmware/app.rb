@@ -9,7 +9,7 @@
 NAME = "KURUMA-1"
 
 # いちばん はやい スピード (0 から 100 まで)
-MAX_SPEED = 70
+MAX_SPEED = 100
 
 # 「おどる」ボタンの うごき
 #   [ ひだりの タイヤ, みぎの タイヤ, なんびょう ]
@@ -30,11 +30,15 @@ INVERT_L = false
 INVERT_R = false
 
 # DRV8833 に つないだ ピン (GP ばんごう)
-PIN_L = [16, 17]   # AIN1, AIN2  ひだりの モーター
-PIN_R = [18, 19]   # BIN1, BIN2  みぎの モーター
+# DRV8833 を 左右に 1 枚ずつ つかい、まえと うしろの モーターを おなじ ピンで うごかす (4WD)
+PIN_L = [16, 17]   # ひだりの DRV8833 の AIN1+BIN1, AIN2+BIN2
+PIN_R = [18, 19]   # みぎの DRV8833 の AIN1+BIN1, AIN2+BIN2
 
 PWM_FREQ   = 10_000 # Hz。左右の 2 本は同じ PWM スライスなので周波数をそろえる
-MIN_DUTY   = 30     # これより弱いと TT モーターが動き出さない
+MIN_DUTY   = 30     # これより弱いと動き出さない。実物で 20〜40 の間で合わせる
+# FA-130 は 3V 用のモーター。単3×3 本 (4.5V) で 100% にすると熱くなるので、上限をここで決める
+# 75 で約 3.4V。単3 の NiMH (3.6V) なら 90 くらいまで上げてよい
+MAX_DUTY   = 75
 TICK_MS    = 20     # BLE::UART#start のブロックが呼ばれる間隔
 TIMEOUT_MS = 500    # これだけコマンドが来なければ止まる (フェイルセーフ)
 
@@ -59,7 +63,7 @@ class Motor
     value = 100 if value > 100
     value = -100 if value < -100
     duty = value.abs
-    duty = MIN_DUTY + (100 - MIN_DUTY) * duty / 100 if duty > 0
+    duty = MIN_DUTY + (MAX_DUTY - MIN_DUTY) * duty / 100 if duty > 0
     if value > 0
       @a.duty(duty)
       @b.duty(0)
