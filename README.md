@@ -3,6 +3,10 @@
 Raspberry Pi Pico 2 W と PicoRuby、3D プリンタで作る、親子向けの BLE ラジコンカーです。
 Android や PC の Chrome で開いた Web コントローラーから操作します。
 
+> **4WD 版に移行中です。** タミヤ ダブルギヤボックス 2 箱（FA-130 ×4）で 4 輪を回し、TPU で印刷したパドル付きタイヤで砂の上も走れるようにします。今の 2 輪版より 2 倍以上速くなる見込みです。
+> - 済み: ファーム（`MAX_DUTY`）、配線（DRV8833 ×2）、タイヤのスクリプト（`cad/RcTire`）、部品表
+> - まだ: 底板（`cad/RcCarChassis`）。ギヤボックスの実物を測ってから作り直します
+
 ![完成イメージ](docs/images/car_complete.png)
 
 <details><summary>ボディを外したところ</summary>
@@ -18,6 +22,7 @@ rc-car/
 ├── firmware/app.rb            PicoRuby の制御コード (/home/app.rb に置く)
 ├── controller/index.html      Web コントローラー (Chrome で開く)
 ├── cad/RcCarChassis/          Fusion 用スクリプト (底板・ボディ・バンパー)
+├── cad/RcTire/                Fusion 用スクリプト (4WD 版のパドル付きタイヤ、TPU で印刷)
 └── docs/                      部品表 (BOM.md)、配線 (wiring.md / wiring.svg)、組み立て (assembly.md)
 ```
 
